@@ -58,3 +58,19 @@
 input.small {
   width: 2em;
 }
+
+pre {
+  margin-top: 20px;
+}
+
+.row {
+  background: #E6EDE6;
+  border-radius: 10px;
+  margin-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+}
+
+.container {
+  width: 90%;
+}

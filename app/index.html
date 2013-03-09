@@ -44,7 +44,7 @@
       <div class="span4">
 	<h3>Sign up for an API Key</h3>
 	<div ng-show='api_key.api_key == ""'>
-	  <button ng-click="create_api_key()">Get an API Key</button>
+	  <br><button class="btn" ng-click="create_api_key()">Get an API Key</button>
 	</div>
 	<div ng-show='api_key.api_key != ""'>
 	  Great! Your api key is <br>
@@ -70,8 +70,8 @@ returns
     </div>
     <div class="row" ng-show='api_key.api_key != ""'>
       <div id="cab_meter" class="span4">
-	<form class="form">
-	  <h3>Now add a cab meter</h3>
+	<h3>Now add a cab meter</h3>
+	<form class="form well">
 	  <div ng-repeat="step in steps">
 	    <input type="text" style="width:4em" ng-model="step[0]"> kms @ Rs. 
 	    <input type="text" class="small" ng-model="step[1]"> per km
@@ -80,7 +80,7 @@ returns
 	  per minute when cab is moving slower than 
 	  <input type="text"
 	  ng-model="cab_meter.cab_meter.scheme.wait.wait_speed" class="small"> km/hr
-	  <button ng-click="create_cab_meter($scope.cab_meter)">Create
+	  <br><button class="btn" ng-click="create_cab_meter($scope.cab_meter)">Create
 	  a Meter</button>
 	</form>
       </div>
@@ -126,7 +126,11 @@ returns
       <div class="span4">
 	<h3>start the meter</h3>
 	send the <strong>write_id</strong> of the meter as a parameter
-	<button ng-click="start_cab_meter(cab_meter_result.write_id)">Start!</button>
+	<br><button class="btn"
+	ng-click="start_cab_meter(cab_meter_result.write_id)">Start!</button>
+	<div ng-show="cab_meter_started" style="background:
+	lightgreen; margin: 10px; padding: 10px; font-size: 1.1em;
+	border-radius: 10px">Note the state of the meter is now 'started'</div>
       </div>
       <div class="span4">
 	<pre> 
@@ -160,7 +164,7 @@ returns
       <div class="span4" >
 	<h3>Submit Location Data</h3>
 	Keep hitting the cab meter with lat, lng and time information
-	<button ng-click="mark_points()">Hit me!</button>
+	<br><button class="btn" ng-click="mark_points()">Hit me!</button>
       </div>
       <div class="span4">
 	<pre>
@@ -191,7 +195,7 @@ returns
     <div class="row" ng-show="point_added">
       <div class="span4">
 	<h3>When done, stop the meter</h3>
-	<button ng-click="stop_meter(cab_meter_result2.write_id)">Stop the meter</button>
+	<br><button class="btn" ng-click="stop_meter(cab_meter_result2.write_id)">Stop the meter</button>
       </div>
       <div class="span4">
 	<pre>
@@ -227,7 +231,7 @@ returns
 	please note, you can use the read_only id for GET
 	requests. Share this id with clients that should not be
 	allowed to update the cab meter
-	<button ng-click="read_meter(cab_meter_result2.read_only_id)">Stop the meter</button>
+	<button class="btn" class="btn"  ng-click="read_meter(cab_meter_result2.read_only_id)">Read Meter</button>
       </div>
       <div class="span4">
 	<pre>

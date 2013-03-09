@@ -17,6 +17,8 @@ function HomeController($scope, $timeout, api_key_service, cab_meter_service) {
     },
     api_key: $scope.api_key.api_key
   };
+  var points_index = 0;
+  var time = moment();
   var points = [[19.108060000000002, 72.83226],
     [19.107180000000003, 72.83226],
     [19.10717, 72.83291000000001],
@@ -115,6 +117,8 @@ function HomeController($scope, $timeout, api_key_service, cab_meter_service) {
   $scope.mark_point = function() {
     cab_meter_service.add_point($scope.cab_meter_result2.write_id, $scope.selected_point).success(function(data) {
       $scope.returned_point = data;
+      points_index += 1;
+      $scope.mark_points();
     }).error(function(data) {
       $scope.alerts = alert_service.parse_alerts(data);
     });
@@ -122,13 +126,15 @@ function HomeController($scope, $timeout, api_key_service, cab_meter_service) {
 
 
   $scope.mark_points = function() {
-    var time = moment();
-    angular.forEach(points, function(point, key) {
-		      time = time.add('seconds',Math.random()*15);
-		      $scope.selected_point = {lat: point[0], lng: point[1], created_at: time._d.toISOString()};
-		      $scope.mark_point();
-		    });
-    $scope.point_added = true;
+    if (points_index >= points.length) {
+      $scope.point_added = true;
+      return false;
+    } else {
+      var p = points[points_index];
+      time = time.add('seconds',(Math.random()*15) + 15);
+      $scope.selected_point = {lat: p[0], lng: p[1], created_at: time._d.toISOString()};
+      $scope.mark_point();
+    }
   };
 
   $scope.stop_meter = function(id) {
