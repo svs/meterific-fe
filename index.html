@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en" ng-app="meterific" ng-controller="HomeController">
+<head>
+  <meta charset="utf-8">
+  <title>yTaxi</title>
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="app/css/app.css"/>
+</head>
+<body>
+
+  <!-- Adding all required libraries -->
+  <script type="text/javascript"
+	      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDqIw9i0YHToIElNoV-_EcapxZ2Yx6oJAw&libraries=places&sensor=false">
+  </script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.js"></script>
+  <script src="app/lib/angular-ui/angular-ui.min.js"></script>
+  <script src="app/lib/angular-ui/ui-bootstrap-tpls-0.1.0.js"></script>
+  <script src="app/lib/angular-strap/angular-strap.js"></script>
+  <script src="app/lib/moment.min.js"></script>
+  
+  <!--   All core javascript files-->
+  <script src="app/js/objects.js"></script>
+  <script src="app/js/defaults.js"></script>
+  <script src="app/js/app.js"></script>
+  
+  <!-- Adding all files related to services -->
+  <script src="app/js/constants.js"></script>
+  <script src="app/js/services/api_key_service.js"></script>
+  <script src="app/js/services/alert_service.js"></script>
+  <script src="app/js/services/cab_meter_service.js"></script>
+  
+  <!-- Adding all files related to Controllers -->
+  <script src="app/js/controllers/home_controller.js"></script>
+  
+  <!-- Adding all files related to Filters -->
+  <script src="app/js/filters.js"></script>
+  
+  <!-- Adding all files related to Directives -->
+  <script src="app/js/directives.js"></script>
+  <div class="container">
+    <div class="row">
+      <div class="span4">
+	<h3>Sign up for an API Key</h3>
+	<div ng-show='api_key.api_key == ""'>
+	  <br><button class="btn" ng-click="create_api_key()">Get an API Key</button>
+	</div>
+	<div ng-show='api_key.api_key != ""'>
+	  Great! Your api key is <br>
+	  <strong ng-bind="api_key.api_key"></strong><br> Please send this key along
+	  while creating cab meters
+	</div>
+      </div>
+      <div class="span4">
+	<pre>POST /api_keys</pre>
+      </div>
+      <div class="span4" ng-show='api_key.api_key != ""'>
+	<pre>
+returns
+{ 
+  id: {{api_key.id}},
+  api_key: {{api_key.api_key}},
+}
+	  
+	</pre>
+
+      </div>
+
+    </div>
+    <div class="row" ng-show='api_key.api_key != ""'>
+      <div id="cab_meter" class="span4">
+	<h3>Now add a cab meter</h3>
+	<form class="form well">
+	  <div ng-repeat="step in steps">
+	    <input type="text" style="width:4em" ng-model="step[0]"> kms @ Rs. 
+	    <input type="text" class="small" ng-model="step[1]"> per km
+	  </div>
+	  Waiting charge is Rs.<input type="text" class="small" ng-model="cab_meter.cab_meter.scheme.wait.per_minute">
+	  per minute when cab is moving slower than 
+	  <input type="text"
+	  ng-model="cab_meter.cab_meter.scheme.wait.wait_speed" class="small"> km/hr
+	  <br><button class="btn" ng-click="create_cab_meter($scope.cab_meter)">Create
+	  a Meter</button>
+	</form>
+      </div>
+      <div class="span4">
+	<pre>
+POST /cab_meters
+{
+  cab_meter: {
+    scheme: {
+      kms: [<span ng-repeat="step in  steps">["{{step[0]}}",{{step[1]}}]</span>],
+      wait: {
+        per_minute: {{cab_meter.cab_meter.scheme.wait.per_minute}},
+        wait_speed:  {{cab_meter.cab_meter.scheme.wait.wait_speed}},
+      }
+    },
+    api_key: {{api_key.api_key}}
+  }
+}
+	</pre>
+      </div>
+      <div class="span4" ng-show="show_cab_meter">
+	<pre>
+returns
+{
+  scheme: {
+    kms: [<span ng-repeat="step in  cab_meter_result.scheme.kms">["{{step[0]}}",{{step[1]}}]</span>],
+    wait: {
+      per_minute: {{cab_meter_result.scheme.wait.per_minute}},
+      wait_speed:  {{cab_meter_result.scheme.wait.wait_speed}},
+    },
+    write_id: "{{cab_meter_result.write_id}}",
+    read_only_id: "{{cab_meter_result.read_only_id}}",
+    state: "{{cab_meter_result.state}}",
+    created_at: "{{cab_meter_result.created_at}}",
+    updated_at: "{{cab_meter_result.updated_at}}"
+  }
+}
+	</pre>
+      </div>
+
+    </div>
+    <div class="row" ng-show="show_cab_meter">
+      <div class="span4">
+	<h3>start the meter</h3>
+	send the <strong>write_id</strong> of the meter as a parameter
+	<br><button class="btn"
+	ng-click="start_cab_meter(cab_meter_result.write_id)">Start!</button>
+	<div ng-show="cab_meter_started" style="background:
+	lightgreen; margin: 10px; padding: 10px; font-size: 1.1em;
+	border-radius: 10px">Note the state of the meter is now 'started'</div>
+      </div>
+      <div class="span4">
+	<pre> 
+POST /cab_meters/start
+{
+  id: {{cab_meter_result.write_id}}
+}
+	</pre>
+      </div>
+      <div class="span4" ng-show="cab_meter_started">
+	<pre>
+returns
+{
+  scheme: {
+    kms: [<span ng-repeat="step in  cab_meter_result2.scheme.kms">["{{step[0]}}",{{step[1]}}]</span>],
+    wait: {
+      per_minute: {{cab_meter_result2.scheme.wait.per_minute}},
+      wait_speed:  {{cab_meter_result2.scheme.wait.wait_speed}},
+    },
+    write_id: "{{cab_meter_result2.write_id}}",
+    read_only_id: "{{cab_meter_result2.read_only_id}}",
+    state: "{{cab_meter_result2.state}}"
+    created_at: "{{cab_meter_result2.created_at}}"
+    updated_at: "{{cab_meter_result2.updated_at}}"
+  }
+}
+	</pre>
+      </div>
+    </div>
+    <div class="row" ng-show="cab_meter_started">
+      <div class="span4" >
+	<h3>Submit Location Data</h3>
+	Keep hitting the cab meter with lat, lng and time information
+	<br><button class="btn" ng-click="mark_points()">Hit me!</button>
+      </div>
+      <div class="span4">
+	<pre>
+POST /cab_meters/mark
+{
+  point: {
+    lat: {{selected_point.lat}},
+    lng: {{selected_point.lng}},
+    created_at: "{{selected_point.created_at}}"
+  }
+  id: "{{cab_meter_result2.write_id}}"
+}
+	</pre>
+	</div>
+      <div class="span4" ng-show="point_added">
+	<pre>
+returns
+{
+  lat: {{returned_point.lat}},
+  lng: {{returned_point.lng}},
+  created_at: "{{returned_point.created_at}}"
+  speed: {{returned_point.speed}},
+  distance: {{returned_point.distance}}
+}
+	</pre>
+      </div>
+    </div>
+    <div class="row" ng-show="point_added">
+      <div class="span4">
+	<h3>When done, stop the meter</h3>
+	<br><button class="btn" ng-click="stop_meter(cab_meter_result2.write_id)">Stop the meter</button>
+      </div>
+      <div class="span4">
+	<pre>
+POST /cab_meters/stop
+{
+  id: {{cab_meter_result2.write_id}}
+}
+	</pre>
+      </div>
+      <div class="span4" ng-show="cab_meter_stopped">
+	<pre>
+returns
+{
+  scheme: {
+    kms: [<span ng-repeat="step in  cab_meter_result2.scheme.kms">["{{step[0]}}",{{step[1]}}]</span>],
+    wait: {
+      per_minute: {{cab_meter_result2.scheme.wait.per_minute}},
+      wait_speed:  {{cab_meter_result2.scheme.wait.wait_speed}},
+    },
+    write_id: "{{cab_meter_result3.write_id}}",
+    read_only_id: "{{cab_meter_result3.read_only_id}}",
+    state: "{{cab_meter_result3.state}}"
+    created_at: "{{cab_meter_result3.created_at}}"
+    updated_at: "{{cab_meter_result3.updated_at}}"
+  }
+}
+	</pre>
+      </div>
+    </div>
+    <div class="row" ng-show="cab_meter_stopped">
+      <div class="span4">
+	<h3>At any point, read the meter</h3>
+	please note, you can use the read_only id for GET
+	requests. Share this id with clients that should not be
+	allowed to update the cab meter
+	<button class="btn" class="btn"  ng-click="read_meter(cab_meter_result2.read_only_id)">Read Meter</button>
+      </div>
+      <div class="span4">
+	<pre>
+GET /cab_meters/read?id={{cab_meter_result2.read_only_id}}
+	</pre>
+      </div>
+      <div class="span4" ng-show="cab_meter_read">
+	<pre>
+returns
+{
+  kms: {
+    count: {{meter_reading.kms.count}},
+    cost: {{meter_reading.kms.cost}}
+  },
+  wait: {
+    count: {{meter_reading.wait.count}}
+    cost: {{meter_reading.wait.cost}}
+  }
+  total: {{meter_reading.total}}
+}
+
+</body>
+</html>
